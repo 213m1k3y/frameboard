@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frameboard</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101010;color:#eee;font:14px system-ui,-apple-system,Segoe UI,sans-serif;height:100vh;overflow:hidden}
+button,input{font:inherit}button{cursor:pointer}.app{height:100vh;display:grid;grid-template-rows:58px 1fr}.top{display:flex;align-items:center;gap:18px;padding:0 18px;border-bottom:1px solid #292929;background:#151515}.logo{font-size:18px;font-weight:750}.tabs{display:flex;gap:6px}.tab,.btn{background:#202020;color:#bbb;border:1px solid #383838;border-radius:7px;padding:8px 12px}.tab.active{background:#2b2b2b;color:#fff}.btn:hover,.tab:hover{background:#2b2b2b;color:#fff}.primary{background:#eee;color:#111;border-color:#eee}.danger{color:#ff9999}
+.workspace{min-height:0;position:relative;display:block}.workspace>.side,.workspace>.main{height:100%}.workspace.story-mode>.side,.workspace.story-mode>.main{display:none!important}.workspace.story-mode>.story{display:grid!important;position:absolute;inset:0}.side{background:#171717;border-right:1px solid #292929;padding:14px;display:flex;flex-direction:column;min-width:0}.sidehead{display:flex;align-items:center;gap:8px;margin-bottom:12px}.sidehead strong{margin-right:auto}.tree{overflow:auto;min-height:0}.folder{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:7px;color:#bbb;cursor:pointer;user-select:none}.folder:hover,.folder.active{background:#292929;color:#fff}.folder .count{margin-left:auto;color:#666;font-size:11px}.indent{margin-left:17px}.folder-actions{display:none;margin-left:4px}.folder:hover .folder-actions{display:inline-flex}.folder-actions button{padding:2px 5px;background:transparent;border:0;color:#aaa}
+.main{min-width:0;min-height:0;display:flex;flex-direction:column}.toolbar{min-height:58px;border-bottom:1px solid #242424;padding:10px 16px;display:flex;gap:8px;align-items:center}.crumb{font-weight:650;margin-right:auto}.search{width:230px;background:#191919;color:#fff;border:1px solid #353535;border-radius:7px;padding:9px 11px}.pane{padding:18px;overflow:auto;min-height:0}.drop{border:1px dashed #444;border-radius:10px;padding:16px;text-align:center;color:#888;margin-bottom:16px}.drop.drag{border-color:#aaa;color:#fff}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:15px}.card{position:relative;background:#191919;border:1px solid #2d2d2d;border-radius:10px;overflow:hidden}.thumb{width:100%;aspect-ratio:16/10;display:block;object-fit:cover;background:#0b0b0b}.meta{padding:9px}.name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.small{font-size:11px;color:#777;margin-top:4px}.more{position:absolute;right:7px;top:7px}.more button{width:32px;height:32px;border-radius:50%;border:1px solid #555;background:#000b;color:#fff}.menu{position:absolute;right:7px;top:45px;background:#202020;border:1px solid #444;border-radius:8px;z-index:20;min-width:165px;box-shadow:0 10px 30px #000a}.menu button{display:block;width:100%;border:0;background:none;color:#eee;text-align:left;padding:10px 12px}.menu button:hover{background:#303030}.empty{border:1px dashed #3a3a3a;border-radius:10px;color:#777;padding:70px 20px;text-align:center}
+/* storyboard */
+.story{display:none;min-height:0;height:100%;grid-template-columns:230px 1fr}.boards{background:#171717;border-right:1px solid #292929;padding:14px;overflow:auto}.boarditem{padding:9px;border-radius:7px;color:#bbb;cursor:pointer}.boarditem.active,.boarditem:hover{background:#292929;color:#fff}.canvasarea{min-width:0;display:flex;flex-direction:column}.storytoolbar{height:58px;border-bottom:1px solid #292929;display:flex;align-items:center;gap:8px;padding:0 14px}.canvas{position:relative;flex:1;overflow:auto;background:#0b0b0b;padding:28px}.board{position:relative;width:1200px;height:675px;background:#fff;margin:0 auto;overflow:hidden;box-shadow:0 12px 50px #0008}.boarditem-img{position:absolute;left:0;top:0;width:100%;height:100%;display:block;cursor:move;user-select:none;object-fit:fill;border:2px solid transparent}.storyitem{position:absolute;min-width:30px;min-height:30px}.storyitem.selected{z-index:5}.storyitem.selected .boarditem-img{border-color:#111;outline:2px solid #fff}.resize-handle{position:absolute;width:10px;height:10px;background:#111;border:2px solid #fff;border-radius:2px;box-sizing:border-box;display:none;z-index:3}.storyitem.selected .resize-handle{display:block}.resize-nw{left:-6px;top:-6px;cursor:nwse-resize}.resize-ne{right:-6px;top:-6px;cursor:nesw-resize}.resize-sw{left:-6px;bottom:-6px;cursor:nesw-resize}.resize-se{right:-6px;bottom:-6px;cursor:nwse-resize}.boardempty{color:#888;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:100}.dialog{width:min(430px,calc(100% - 30px));background:#1c1c1c;border:1px solid #444;border-radius:12px;padding:20px}.dialog h2{margin:0 0 8px}.dialog p{color:#bbb;line-height:1.45}.dialog input{width:100%;background:#111;color:#fff;border:1px solid #444;border-radius:7px;padding:10px;margin-top:8px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.hidden{display:none!important}
+[hidden]{display:none!important}
+.workspace.story-active{display:block!important}
+.workspace.story-active #librarySide,.workspace.story-active #libraryMain{display:none!important}
+.workspace.story-active #storyView{display:grid!important;height:100%;min-height:0}
+.workspace.library-active #storyView{display:none!important}
+@media(max-width:800px){.workspace{grid-template-columns:190px 1fr}.story{grid-template-columns:170px 1fr}.search{width:150px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="logo">Frameboard</div><div class="tabs"><button class="tab active" id="libraryTab" onclick="showView('library')">Image Library</button><button class="tab" id="storyboardTab" onclick="showView('storyboard')">Storyboard</button></div></header>
+<div class="workspace" id="workspace">
+<aside class="side" id="librarySide"><div class="sidehead"><strong>Images</strong><button class="btn primary" id="newFolder">＋ Folder</button></div><div class="tree" id="tree"></div></aside>
+<main class="main" id="libraryMain"><div class="toolbar"><div class="crumb" id="crumb">All Images</div><input class="search" id="search" placeholder="Search images…"><label class="btn primary" id="importBtn" for="fileInput">＋ Add Images</label><input id="fileInput" type="file" accept="image/*" multiple style="position:fixed;left:-10000px;top:-10000px;width:1px;height:1px;opacity:0"></div><div class="pane"><div class="drop" id="drop">Drop images here to add them to the current folder. You can also paste an image with Ctrl/Cmd+V.</div><div id="gallery"></div></div></main>
+<section class="story" id="storyView" hidden><aside class="boards"><div class="sidehead"><strong>Boards</strong><button class="btn primary" id="newBoard">＋</button></div><div id="boardList"></div></aside><div class="canvasarea"><div class="storytoolbar"><strong id="boardName">Storyboard</strong><span style="margin-right:auto"></span><button class="btn" id="addFromLibrary">＋ From Library</button><button class="btn" id="pasteStory">Paste Image</button></div><div class="canvas" id="canvas"><div class="board" id="board"></div></div></div></section>
+</div></div>
+<div class="modal" id="modal"><div class="dialog"><h2 id="modalTitle"></h2><p id="modalText"></p><input id="modalInput" class="hidden" maxlength="100"><div class="actions"><button class="btn" id="modalCancel">Cancel</button><button class="btn primary" id="modalOk">OK</button></div></div></div>
+<script>
+const DB='frameboard', VER=1;let db;let currentFolder='root', currentBoard=null, selectedStoryItem=null;
+const $=s=>document.querySelector(s);
+function uid(){return crypto.randomUUID()}
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,VER);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('folders'))d.createObjectStore('folders',{keyPath:'id'});if(!d.objectStoreNames.contains('images'))d.createObjectStore('images',{keyPath:'id'});if(!d.objectStoreNames.contains('boards'))d.createObjectStore('boards',{keyPath:'id'});if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'})};r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
+function tx(store,mode='readonly'){return db.transaction(store,mode).objectStore(store)}
+function getAll(store){return new Promise((res,rej)=>{let r=tx(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function put(store,v){return new Promise((res,rej)=>{let r=tx(store,'readwrite').put(v);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function del(store,id){return new Promise((res,rej)=>{let r=tx(store,'readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function seed(){let fs=await getAll('folders');if(!fs.length){await put('folders',{id:'root',name:'All Images',parent:null,system:true});await put('folders',{id:'unsorted',name:'Unsorted',parent:'root',system:true})}
+// migrate images from the original v3 build if present
+const old=localStorage.getItem('frameboard-library-v3');if(old){try{const arr=JSON.parse(old);for(const x of arr){await put('images',{id:x.id,name:x.name,blob:x.src,folder:'unsorted',created:x.created||Date.now()})}localStorage.removeItem('frameboard-library-v3')}catch(e){}}
+let bs=await getAll('boards');if(!bs.length){let b={id:uid(),name:'Storyboard 1',created:Date.now()};await put('boards',b);currentBoard=b.id}}
+function modal(title,text,input=false,initial=''){return new Promise(resolve=>{const m=$('#modal');$('#modalTitle').textContent=title;$('#modalText').textContent=text||'';$('#modalInput').classList.toggle('hidden',!input);$('#modalInput').value=initial; m.style.display='flex';const done=v=>{m.style.display='none';$('#modalOk').onclick=null;$('#modalCancel').onclick=null;resolve(v)};$('#modalOk').onclick=()=>done(input?$('#modalInput').value.trim():true);$('#modalCancel').onclick=()=>done(null);if(input)setTimeout(()=>$('#modalInput').focus(),30)})}
+async function folders(){return getAll('folders')};async function images(){return getAll('images')};async function boards(){return getAll('boards')};
+async function renderTree(){const fs=await folders();const tree=$('#tree');tree.innerHTML='';function add(parent,depth){fs.filter(f=>f.parent===parent).forEach(f=>{const d=document.createElement('div');d.className='folder '+(currentFolder===f.id?'active':'');d.style.paddingLeft=(9+depth*17)+'px';d.dataset.id=f.id;d.innerHTML=`<span>▰</span><span>${esc(f.name)}</span><span class="count">${fsCount(f.id)}</span>${!f.system?'<span class="folder-actions"><button title="Rename">✎</button></span>':''}`;d.onclick=()=>{currentFolder=f.id;renderAll()};if(!f.system){d.querySelector('.folder-actions button').onclick=async e=>{e.stopPropagation();const n=await modal('Rename folder','',true,f.name);if(n){f.name=n;await put('folders',f);renderAll()}};d.oncontextmenu=async e=>{e.preventDefault();const n=await modal('Rename folder','',true,f.name);if(n){f.name=n;await put('folders',f);renderAll()}}}tree.appendChild(d);add(f.id,depth)})}add('root',0);const all=document.createElement('div');all.className='folder '+(currentFolder==='root'?'active':'');all.innerHTML=`<span>▰</span><span>All Images</span><span class="count">${(await images()).length}</span>`;all.onclick=()=>{currentFolder='root';renderAll()};tree.prepend(all)}
+async function fsCount(fid){return (await images()).filter(i=>i.folder===fid).length}
+async function renderGallery(){const q=$('#search').value.toLowerCase();let ims=await images();if(currentFolder!=='root')ims=ims.filter(i=>i.folder===currentFolder);if(q)ims=ims.filter(i=>i.name.toLowerCase().includes(q));const g=$('#gallery');if(!ims.length){g.innerHTML='<div class="empty">No images here yet.</div>';return}g.innerHTML='<div class="grid">'+ims.map(i=>`<article class="card" draggable="true" data-id="${i.id}"><img class="thumb" src="${i.blob}"><div class="meta"><div class="name" title="${esc(i.name)}">${esc(i.name)}</div><div class="small">${new Date(i.created).toLocaleDateString()}</div></div><div class="more"><button>⋮</button><div class="menu" hidden><button class="move">Move to…</button><button class="rename">Rename</button><button class="del danger">Delete from Library</button></div></div></article>`).join('')+'</div>';
+g.querySelectorAll('.card').forEach(c=>{const iid=c.dataset.id;c.ondragstart=e=>e.dataTransfer.setData('text/plain',iid);const menu=c.querySelector('.menu');c.querySelector('.more>button').onclick=e=>{e.stopPropagation();menu.hidden=!menu.hidden};c.querySelector('.del').onclick=async()=>{if(await modal('Delete image?','This removes it from the Image Library. Existing storyboard placements remain intact.')){await del('images',iid);renderAll()}};c.querySelector('.rename').onclick=async()=>{const im=ims.find(x=>x.id===iid);const n=await modal('Rename image','',true,im.name);if(n){im.name=n;await put('images',im);renderAll()}};c.querySelector('.move').onclick=async()=>{const fs=await folders();const choices=fs.filter(f=>f.id!=='root').map(f=>f.name+' — '+f.id).join('\n');const n=await modal('Move image','Choose a folder by typing its exact name:\n'+choices,true);const dest=fs.find(f=>f.id!=='root'&&f.name.toLowerCase()===n?.toLowerCase());if(dest){const im=ims.find(x=>x.id===iid);im.folder=dest.id;await put('images',im);renderAll()}}})}
+async function importFiles(list){
+  const files=[...list].filter(f=>f && f.type && f.type.startsWith('image/'));
+  if(!files.length){ alert('Please choose one or more image files.'); return; }
+  for(const f of files){
+    const data=await blobToData(f);
+    await put('images',{id:uid(),name:f.name||('Image '+Date.now()),blob:data,folder:currentFolder==='root'?'unsorted':currentFolder,created:Date.now()});
+  }
+  await renderAll();
+}
+
+async function createFolder(){const n=await modal('New Folder','Name this folder.',true);if(!n)return;await put('folders',{id:uid(),name:n,parent:currentFolder==='root'?'root':currentFolder,system:false});renderAll()}
+async function moveDrop(iid,fid){const im=(await images()).find(x=>x.id===iid);if(!im)return;im.folder=fid==='root'?'unsorted':fid;await put('images',im);renderAll()}
+async function renderBoards(){const bs=await boards();if(!currentBoard&&bs[0])currentBoard=bs[0].id;const list=$('#boardList');list.innerHTML=bs.map(b=>`<div class="boarditem ${b.id===currentBoard?'active':''}" data-id="${b.id}">${esc(b.name)}</div>`).join('');list.querySelectorAll('.boarditem').forEach(x=>x.onclick=()=>{currentBoard=x.dataset.id;renderStoryboard()})}
+async function renderStoryboard(){await renderBoards();const bs=await boards();const b=bs.find(x=>x.id===currentBoard);$('#boardName').textContent=b?.name||'Storyboard';const all=await getAll('items');const boardItems=all.filter(x=>x.boardId===currentBoard);const ims=await images();const board=$('#board');board.innerHTML='';if(!boardItems.length){board.innerHTML='<div class="boardempty">Your storyboard is empty.<br>Use “From Library” or paste an image.</div>';return}for(const it of boardItems){const wrap=document.createElement('div');wrap.className='storyitem';wrap.style.left=it.x+'px';wrap.style.top=it.y+'px';wrap.style.width=it.w+'px';wrap.style.height=it.h+'px';const el=document.createElement('img');el.className='boarditem-img';el.src=it.blob;wrap.appendChild(el);for(const dir of ['nw','ne','sw','se']){const h=document.createElement('div');h.className='resize-handle resize-'+dir;h.dataset.dir=dir;wrap.appendChild(h);makeResizable(h,wrap,it,dir)};wrap.onclick=e=>{if(e.target.classList.contains('resize-handle'))return;document.querySelectorAll('.storyitem').forEach(x=>x.classList.remove('selected'));wrap.classList.add('selected');selectedStoryItem=it.id};wrap.oncontextmenu=async e=>{e.preventDefault();if(await modal('Remove from storyboard?','This removes the placement, not the source image in your library.')){await del('items',it.id);renderStoryboard()}};makeDraggable(wrap,it);board.appendChild(wrap)}}
+function makeDraggable(el,it){let sx,sy,ox,oy,pid=null;el.onpointerdown=e=>{if(e.target.classList.contains('resize-handle'))return;e.preventDefault();e.stopPropagation();pid=e.pointerId;el.setPointerCapture(pid);sx=e.clientX;sy=e.clientY;ox=it.x;oy=it.y;document.querySelectorAll('.storyitem').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedStoryItem=it.id};el.onpointermove=e=>{if(pid!==e.pointerId||!el.hasPointerCapture(pid))return;it.x=ox+e.clientX-sx;it.y=oy+e.clientY-sy;el.style.left=it.x+'px';el.style.top=it.y+'px'};el.onpointerup=async e=>{if(pid===e.pointerId){if(el.hasPointerCapture(pid))el.releasePointerCapture(pid);pid=null;await put('items',it)}}}
+function makeResizable(handle,el,it,dir){let sx,sy,ox,oy,ow,oh,pid=null;handle.onpointerdown=e=>{e.preventDefault();e.stopPropagation();pid=e.pointerId;handle.setPointerCapture(pid);sx=e.clientX;sy=e.clientY;ox=it.x;oy=it.y;ow=it.w;oh=it.h;el.classList.add('selected')};handle.onpointermove=e=>{if(pid!==e.pointerId||!handle.hasPointerCapture(pid))return;let dx=e.clientX-sx,dy=e.clientY-sy,nx=ox,ny=oy,nw=ow,nh=oh;if(dir.includes('e'))nw=ow+dx;if(dir.includes('s'))nh=oh+dy;if(dir.includes('w')){nw=ow-dx;nx=ox+dx}if(dir.includes('n')){nh=oh-dy;ny=oy+dy}const min=40;if(nw<min){if(dir.includes('w'))nx=ox+ow-min;nw=min}if(nh<min){if(dir.includes('n'))ny=oy+oh-min;nh=min}it.x=nx;it.y=ny;it.w=nw;it.h=nh;el.style.left=nx+'px';el.style.top=ny+'px';el.style.width=nw+'px';el.style.height=nh+'px'};handle.onpointerup=async e=>{if(pid===e.pointerId){if(handle.hasPointerCapture(pid))handle.releasePointerCapture(pid);pid=null;await put('items',it)}}}
+async function addFromLibrary(){const ims=await images();if(!ims.length){alert('Your Image Library is empty.');return}const name=prompt('Type the exact image filename to place:\n\n'+ims.map(x=>x.name).join('\n'));const im=ims.find(x=>x.name.toLowerCase()===name?.trim().toLowerCase());if(!im)return;await put('items',{id:uid(),boardId:currentBoard,blob:im.blob,x:40,y:40,w:320,h:200,sourceImageId:im.id});renderStoryboard()}
+async function pasteImage(){
+  try{
+    const items=await navigator.clipboard.read();
+    for(const ci of items){
+      for(const type of ci.types){
+        if(type.startsWith('image/')){
+          const blob=await ci.getType(type);
+          const data=await blobToData(blob);
+          await put('items',{id:uid(),boardId:currentBoard,blob:data,x:40,y:40,w:320,h:200,sourceImageId:null});
+          await renderStoryboard();
+          return;
+        }
+      }
+    }
+    alert('No image was available on the clipboard.');
+  }catch(e){
+    alert('Clipboard access was blocked by the browser. Use Ctrl/Cmd+V directly on the page instead.');
+  }
+}
+
+function blobToData(b){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)})}
+document.addEventListener('paste',async e=>{
+  const files=[...e.clipboardData.files].filter(f=>f.type&&f.type.startsWith('image/'));
+  if(!files.length)return;
+  e.preventDefault();
+  if($('#storyView').hidden){ await importFiles(files); }
+  else {
+    const d=await blobToData(files[0]);
+    await put('items',{id:uid(),boardId:currentBoard,blob:d,x:40,y:40,w:320,h:200,sourceImageId:null});
+    await renderStoryboard();
+  }
+});
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function renderAll(){const fs=await folders();const f=fs.find(x=>x.id===currentFolder);$('#crumb').textContent=f?.name||'All Images';await renderTree();await renderGallery()}
+$('#newFolder').onclick=createFolder;
+$('#fileInput').addEventListener('change',async e=>{const files=e.target.files; if(files&&files.length) await importFiles(files); e.target.value='';});
+$('#search').oninput=renderGallery;
+
+['#drop','#libraryMain'].forEach(sel=>{
+ const zone=$(sel);
+ zone.ondragover=e=>{if([...e.dataTransfer.types].includes('Files')){e.preventDefault();$('#drop').classList.add('drag')}};
+ zone.ondragleave=e=>{if(!zone.contains(e.relatedTarget))$('#drop').classList.remove('drag')};
+ zone.ondrop=e=>{if([...e.dataTransfer.types].includes('Files')){e.preventDefault();$('#drop').classList.remove('drag');importFiles(e.dataTransfer.files)}};
+});
+document.addEventListener('dragover',e=>{const f=e.target.closest('.folder');if(f)e.preventDefault()});document.addEventListener('drop',e=>{const f=e.target.closest('.folder');const iid=e.dataTransfer.getData('text/plain');if(f&&iid){e.preventDefault();moveDrop(iid,f.dataset.id||'root')}});
+$('#newBoard').onclick=async()=>{const n=await modal('New storyboard','Name your storyboard.',true,'Storyboard '+((await boards()).length+1));if(n){const b={id:uid(),name:n,created:Date.now()};await put('boards',b);currentBoard=b.id;renderStoryboard()}};$('#addFromLibrary').onclick=addFromLibrary;$('#pasteStory').onclick=pasteImage;
+async function showView(v){const w=$('#workspace'), story=$('#storyView'), side=$('#librarySide'), main=$('#libraryMain'), lt=$('#libraryTab'), st=$('#storyboardTab'); const isStory=v==='storyboard'; w.classList.toggle('story-active',isStory); w.classList.toggle('library-active',!isStory); story.hidden=!isStory; side.hidden=isStory; main.hidden=isStory; lt.classList.toggle('active',!isStory); st.classList.toggle('active',isStory); if(isStory) await renderStoryboard(); else await renderAll();}
+(async()=>{await openDB();await seed();await renderAll();await renderStoryboard();await showView('library')})();
+</script>
+</body></html>
